@@ -3,6 +3,7 @@ package fr.woorib.tools.jdbc.instrument;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import javassist.CannotCompileException;
 import javassist.NotFoundException;
@@ -11,6 +12,11 @@ import javassist.NotFoundException;
  * ClassLoader using the ClassFileTransformer to be used for unit testing.
  */
 public class TransformingClassLoader extends ClassLoader {
+  ClassFileTransformer jdbcConnectionTransformer;
+
+  public TransformingClassLoader(ClassFileTransformer transformer) throws NoSuchMethodException, CannotCompileException, NotFoundException, IOException {
+    jdbcConnectionTransformer = transformer;
+  }
 
   /**
    * Method that loads a Class and expects the transformer to make changes to it.
@@ -21,7 +27,6 @@ public class TransformingClassLoader extends ClassLoader {
    * @throws ClassNotFoundException
    */
   public Class<?> loadClassWithChange(String name) throws ClassNotFoundException, NotFoundException, NoSuchMethodException, CannotCompileException, IOException {
-    JDBCConnectionTransformer jdbcConnectionTransformer = new JDBCConnectionTransformer();
     Class<?> aClass = Thread.currentThread().getContextClassLoader().loadClass(name);
     String className = aClass.getName();
     String replace = className.replace('.', '/');

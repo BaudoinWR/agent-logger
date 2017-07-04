@@ -7,6 +7,8 @@ public class Agent {
     System.out.print("Executing premain.........");
     try {
       inst.addTransformer(new JDBCConnectionTransformer(), true);
+      inst.addTransformer(new HttpUrlConnectionLogger(), true);
+      inst.addTransformer(new ChemistryDefaultHttpInvokerLogger(), true);
     }
     catch (Exception e) {
       System.err.println("faied");

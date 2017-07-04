@@ -9,12 +9,16 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.security.ProtectionDomain;
+import java.util.ArrayList;
+import java.util.List;
 import fr.woorib.tools.jdbc.instrument.exception.JDBCTransformException;
 import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtField;
 import javassist.CtMethod;
+import javassist.CtNewMethod;
+import javassist.Modifier;
 import javassist.NotFoundException;
 import javassist.bytecode.Descriptor;
 
@@ -24,6 +28,7 @@ import javassist.bytecode.Descriptor;
  */
 public class JDBCConnectionTransformer implements ClassFileTransformer {
   ClassPool classPool;
+  List<String> alreadyLoaded = new ArrayList<String>();
   public JDBCConnectionTransformer() throws NotFoundException, IOException, CannotCompileException, NoSuchMethodException {
     classPool = ClassPool.getDefault();
     addAllClasspath(classPool);
@@ -40,10 +45,15 @@ public class JDBCConnectionTransformer implements ClassFileTransformer {
    * @throws IllegalAccessException
    * @throws InvocationTargetException
    */
-  private void injectClassIntoLoader(String classname, ClassLoader loader) throws IOException, CannotCompileException, NotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+  private void injectClassIntoLoader(String classname, ClassLoader loader) throws IOException, CannotCompileException, NotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, IllegalClassFormatException {
+    if (alreadyLoaded.contains(classname)) {
+      return;
+    }
+    alreadyLoaded.add(classname);
     byte[] bytes = classPool.getCtClass(classname).toBytecode();
     Method method = ClassLoader.class.getDeclaredMethod("defineClass", String.class, byte[].class, int.class, int.class);
     method.setAccessible(true);
+    bytes = transform(loader, classname.replaceAll(".", "/"), null, null, bytes);
     Class<?> r = (Class<?>) method.invoke(loader, classname, bytes, 0, bytes.length);
 //    method = ClassLoader.class.getDeclaredMethod("resolveClass", Class.class);
 //    method.setAccessible(true);
@@ -54,21 +64,60 @@ public class JDBCConnectionTransformer implements ClassFileTransformer {
   public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
                           ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
     byte[] byteCode = classfileBuffer;
-
     if (className.equals("com/ibm/as400/access/AS400JDBCPreparedStatement")) {
       try {
         injectClassIntoLoader("fr.woorib.tools.jdbc.instrument.QueryHolder", loader);
+//        injectClassIntoLoader("com.ibm.as400.access.AS400JDBCResultSet", loader);
       }
       catch (Exception e) {
         throw new JDBCTransformException(e);
       }
       byteCode = editAS400JDBCPreparedStatement(className, classfileBuffer, loader);
     }
+    if (className.equals("com/ibm/as400/access/AS400JDBCResultSet")) {
+      try {
+        injectClassIntoLoader("fr.woorib.tools.jdbc.instrument.QueryHolder", loader);
+      }
+      catch (Exception e) {
+        throw new JDBCTransformException(e);
+      }
+      byteCode = editAS400JDBCResultSet(className, classfileBuffer, loader);
+    }
     else {
 //      System.out.println("Not Instrumenting " + className);
     }
     return byteCode;
   }
+
+  private byte[] editAS400JDBCResultSet(String className, byte[] classfileBuffer, ClassLoader loader) {
+    byte[] byteCode = classfileBuffer;
+    System.err.println("Found for instrumentalization : " + className);
+    try {
+      CtClass ctClass = classPool.makeClass(new ByteArrayInputStream(
+        classfileBuffer));
+      CtField holder = new CtField(Descriptor.toCtClass("fr.woorib.tools.jdbc.instrument.QueryHolder", classPool), "holder", ctClass);
+      holder.setModifiers(Modifier.PUBLIC);
+      CtMethod setHolder = CtNewMethod.setter("setHolder", holder);
+      ctClass.addField(holder);
+      ctClass.addMethod(setHolder);
+      transformGetValue(classPool, ctClass);
+      //transformExecuteQuery(classPool, ctClass);
+      byteCode = ctClass.toBytecode();
+      ctClass.detach();
+      System.err.println(className + " instrumentation complete.");
+    }
+    catch (Throwable ex) {
+      System.err.println("Exception: " + ex);
+      ex.printStackTrace();
+    }
+    return byteCode;
+  }
+
+  private void transformGetValue(ClassPool classPool, CtClass ctClass) throws NotFoundException, CannotCompileException {
+    CtMethod methodExecuteQuery = ctClass.getMethod("getValue", Descriptor.ofMethod(Descriptor.toCtClass("com.ibm.as400.access.SQLData", classPool), new CtClass[]{CtClass.intType}));
+    methodExecuteQuery.insertAfter("System.err.println(\"getValue called with (\"+$1+\") returning \"+$_.getObject().toString());");
+  }
+
 
   /**
    * Transforms the AS400JDBCPreparedStatement by adding functionality to its methods.
@@ -87,7 +136,7 @@ public class JDBCConnectionTransformer implements ClassFileTransformer {
       transformExecuteQuery(classPool, ctClass);
       byteCode = ctClass.toBytecode();
       ctClass.detach();
-      System.err.println("Instrumentation complete.");
+      System.err.println(className + " instrumentation complete.");
     }
     catch (Throwable ex) {
       System.err.println("Exception: " + ex);
@@ -110,7 +159,8 @@ public class JDBCConnectionTransformer implements ClassFileTransformer {
     methodExecuteQuery.addLocalVariable("startTime", CtClass.longType);
     methodExecuteQuery.insertBefore("startTime = System.currentTimeMillis();");
     methodExecuteQuery.insertAfter("System.err.println(\"jdbc_request_log[query=\\\"\"+sqlStatement_+\"\\\", parameters=\\\"\" + map.toString()+\"\\\" execution_time=\"+ (System.currentTimeMillis() - startTime)+\"]\" );");
-    methodExecuteQuery.insertAfter("System.err.println(new fr.woorib.tools.jdbc.instrument.QueryHolder(sqlStatement_.toString(), map, $_).toString());");
+    //methodExecuteQuery.insertAfter("com.ibm.as400.access.AS400JDBCResultSet res = $_; res.holder = new fr.woorib.tools.jdbc.instrument.QueryHolder(sqlStatement_.toString(), map);");
+    methodExecuteQuery.insertAfter("com.ibm.as400.access.AS400JDBCResultSet res = $_;");
   }
 
   /**

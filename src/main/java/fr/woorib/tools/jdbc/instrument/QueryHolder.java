@@ -20,6 +20,12 @@ public class QueryHolder {
   private final Map<String, Object> parameters;
   private List<Map<String, Object>> result = new LinkedList<Map<String, Object>>();
 
+  public QueryHolder(String statement, Map<String, Object> parameters) {
+    this.statement = statement;
+    this.parameters = parameters;
+    this.stackTrace = new Exception().getStackTrace();
+  }
+
   public QueryHolder(String statement, Map<String, Object> parameters, ResultSet resultSet) {
     this.statement = statement;
     this.parameters = parameters;
