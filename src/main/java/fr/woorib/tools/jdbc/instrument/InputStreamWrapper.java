@@ -3,6 +3,8 @@ package fr.woorib.tools.jdbc.instrument;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.Map;
 
 /**
@@ -40,14 +42,18 @@ public class InputStreamWrapper extends InputStream {
 
   @Override
   public void close() throws IOException {
-    StackTraceElement[] stackTrace = new Exception().getStackTrace();
-    for (StackTraceElement element : stackTrace) {
-      if (element.getClassName().contains("soprasteria")) {
+    if (!(s instanceof InputStreamWrapper)) {
+      StackTraceElement[] stackTrace = new Exception().getStackTrace();
+      for (StackTraceElement element : stackTrace) {
         builder.insert(0, element.toString() + "\n");
-        break;
+        if (element.getClassName().contains("soprasteria")) {
+          break;
+        }
       }
+      String format = DateFormat.getDateTimeInstance().format(new Date());
+      System.out.print("[" + format + "]");
+      System.out.println(builder.toString());
     }
-    System.out.println(builder.toString());
     s.close();
   }
 

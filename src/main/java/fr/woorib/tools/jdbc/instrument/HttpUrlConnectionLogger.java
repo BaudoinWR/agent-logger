@@ -124,18 +124,12 @@ public class HttpUrlConnectionLogger implements ClassFileTransformer {
 
   private void editGetInputStream(CtClass ctClass) throws NotFoundException, CannotCompileException {
     CtMethod getInputStream = getCtMethodOrMake(ctClass, "getInputStream", null, "public java.io.InputStream getInputStream() { return super.getInputStream(); }");
-//      ctClass.getMethod("getInputStream", Descriptor.ofMethod(
-//      Descriptor.toCtClass("java.io.InputStream", ClassPool.getDefault()), null
-//    ));
-    getInputStream.insertAfter("$_ = new fr.woorib.tools.jdbc.instrument.InputStreamWrapper($_, this.url, this.requestProperties);");
-    //getInputStream.insertAfter("System.out.println(\"calling getInputStream\");");
+    getInputStream.insertAfter("$_ = ($_ instanceof fr.woorib.tools.jdbc.instrument.InputStreamWrapper) ? $_ : new fr.woorib.tools.jdbc.instrument.InputStreamWrapper($_, this.url, this.requestProperties);");
   }
 
   private void editGetOutputStream(CtClass ctClass) throws NotFoundException, CannotCompileException {
-    CtMethod getOutputStream = ctClass.getMethod("getOutputStream", Descriptor.ofMethod(
-      Descriptor.toCtClass("java.io.OutputStream", ClassPool.getDefault()), null
-    ));
-    getOutputStream.insertAfter("$_ = new fr.woorib.tools.jdbc.instrument.OutputStreamWrapper($_, this.url);");
+    CtMethod getOutputStream = getCtMethodOrMake(ctClass, "getOutputStream", null, "public java.io.OutputStream getOutputStream() { return super.getOutputStream(); }");
+    getOutputStream.insertAfter("$_ = ($_ instanceof fr.woorib.tools.jdbc.instrument.OutputStreamWrapper) ? $_ :  new fr.woorib.tools.jdbc.instrument.OutputStreamWrapper($_, this.url, this.requestProperties);");
   }
 
 }

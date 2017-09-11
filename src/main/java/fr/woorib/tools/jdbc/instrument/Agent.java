@@ -11,7 +11,7 @@ public class Agent {
       inst.addTransformer(new ChemistryDefaultHttpInvokerLogger(), true);
     }
     catch (Exception e) {
-      System.err.println("faied");
+      System.err.println("failed");
       e.printStackTrace();
       return;
     }

@@ -3,6 +3,7 @@ package fr.woorib.tools.jdbc.instrument;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
+import java.util.Map;
 
 /**
  * Class Wrapping an OutputStream to add logging capabilities.
@@ -11,9 +12,9 @@ public class OutputStreamWrapper extends OutputStream {
   private OutputStream s;
   StringBuilder builder;
 
-  public OutputStreamWrapper(OutputStream s, URL url) {
+  public OutputStreamWrapper(OutputStream s, URL url, Map<String,String> requestProperties) {
     this.s = s;
-    builder = new StringBuilder("Output {url="+url+"} : ");
+    builder = new StringBuilder("Output {url="+url+",request_headers="+requestProperties+"} : ");
   }
   @Override
   public void write(int b) throws IOException {
@@ -28,14 +29,16 @@ public class OutputStreamWrapper extends OutputStream {
 
   @Override
   public void close() throws IOException {
-    StackTraceElement[] stackTrace = new Exception().getStackTrace();
-    for (StackTraceElement element : stackTrace) {
-      if (element.getClassName().contains("soprasteria")) {
+    if (!(s instanceof OutputStreamWrapper)) {
+      StackTraceElement[] stackTrace = new Exception().getStackTrace();
+      for (StackTraceElement element : stackTrace) {
         builder.insert(0, element.toString() + "\n");
-        break;
+        if (element.getClassName().contains("soprasteria")) {
+          break;
+        }
       }
+      System.out.println(builder.toString());
     }
-    System.out.println(builder.toString());
     s.close();
   }
 }
