@@ -6,7 +6,7 @@ public class Agent {
   public static void premain(String agentArgs, Instrumentation inst) throws ClassNotFoundException {
     System.out.print("Executing premain.........");
     try {
-      inst.addTransformer(new JDBCConnectionTransformer(), true);
+      inst.addTransformer(new GenericJDBCConnectionTransformer(), true);
       inst.addTransformer(new HttpUrlConnectionLogger(), true);
       inst.addTransformer(new ChemistryDefaultHttpInvokerLogger(), true);
     }

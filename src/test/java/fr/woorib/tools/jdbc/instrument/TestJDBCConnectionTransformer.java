@@ -14,7 +14,7 @@ public class TestJDBCConnectionTransformer {
   @Test
   public void testCompiledClassDifferent() throws ClassNotFoundException, NotFoundException, NoSuchMethodException, CannotCompileException, IOException, NoSuchFieldException, SQLException {
     Class<?> aClass = Thread.currentThread().getContextClassLoader().loadClass("com.ibm.as400.access.AS400JDBCPreparedStatement");
-    TransformingClassLoader transformingClassLoader = new TransformingClassLoader(new JDBCConnectionTransformer());
+    TransformingClassLoader transformingClassLoader = new TransformingClassLoader(new AS400JDBCConnectionTransformer());
     Class<?> aClass2 = transformingClassLoader.loadClassWithChange("com.ibm.as400.access.AS400JDBCResultSet");
     Field holder = aClass2.getDeclaredField("holder");
     Method[] declaredMethods = aClass2.getDeclaredMethods();
@@ -25,7 +25,7 @@ public class TestJDBCConnectionTransformer {
   @Test
   public void testCompiledClassSame() throws ClassNotFoundException, NoSuchMethodException, CannotCompileException, NotFoundException, IOException {
     Class<?> aClass = Thread.currentThread().getContextClassLoader().loadClass("com.ibm.as400.access.AS400JDBCPreparedStatement");
-    Class<?> aClass1 = new TransformingClassLoader(new JDBCConnectionTransformer()).loadClass("com.ibm.as400.access.AS400JDBCPreparedStatement");
+    Class<?> aClass1 = new TransformingClassLoader(new AS400JDBCConnectionTransformer()).loadClass("com.ibm.as400.access.AS400JDBCPreparedStatement");
     Assert.assertEquals(aClass, aClass1);
   }
 }
