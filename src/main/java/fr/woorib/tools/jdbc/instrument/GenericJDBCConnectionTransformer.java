@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
+import java.util.ArrayList;
+import java.util.List;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtMethod;
@@ -59,7 +61,7 @@ public class GenericJDBCConnectionTransformer implements ClassFileTransformer {
     try {
 //      CtMethod methodExecuteQuery = ctClass.getMethod("prepareStatement", Descriptor.ofMethod(Descriptor.toCtClass("java.sql.PreparedStatement", ClassPool.getDefault()), new CtClass[]{Descriptor.toCtClass("java.lang.String", ClassPool.getDefault())
 //      }));
-      CtMethod[] methodsPrepareStatement = ctClass.getDeclaredMethods("prepareStatement");
+      CtMethod[] methodsPrepareStatement = getDeclaredMethods(ctClass, "prepareStatement");
       for (CtMethod method : methodsPrepareStatement)
         method.insertAfter("$_ = ($_ instanceof fr.woorib.tools.jdbc.instrument.PreparedStatementWrapper) ? $_ :  new fr.woorib.tools.jdbc.instrument.PreparedStatementWrapper($_, $1);");
       byteCode = ctClass.toBytecode();
@@ -75,7 +77,7 @@ public class GenericJDBCConnectionTransformer implements ClassFileTransformer {
   private byte[] editCreateStatement(CtClass ctClass) {
     byte[] byteCode = null;
     try {
-      CtMethod[] methodsCreateStatement = ctClass.getDeclaredMethods("createStatement");
+      CtMethod[] methodsCreateStatement = getDeclaredMethods(ctClass, "createStatement");
       for (CtMethod method : methodsCreateStatement)
         method.insertAfter("$_ = ($_ instanceof fr.woorib.tools.jdbc.instrument.StatementWrapper) ? $_ :  new fr.woorib.tools.jdbc.instrument.StatementWrapper($_);");
       byteCode = ctClass.toBytecode();
@@ -86,6 +88,17 @@ public class GenericJDBCConnectionTransformer implements ClassFileTransformer {
       ex.printStackTrace();
     }
     return byteCode;
+  }
+
+  private CtMethod[] getDeclaredMethods(CtClass ctClass, String methodName) throws NotFoundException {
+    CtMethod[] declaredMethods = ctClass.getDeclaredMethods();
+    List<CtMethod> ctMethods = new ArrayList<CtMethod>();
+    for (CtMethod method : declaredMethods) {
+      if (methodName.equals(method.getName())) {
+        ctMethods.add(method);
+      }
+    }
+    return ctMethods.toArray(new CtMethod[0]);
   }
 
   private byte[] logAll(CtClass ctClass) {
