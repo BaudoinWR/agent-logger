@@ -10,7 +10,7 @@ public class Agent {
 //      inst.addTransformer(new GenericJDBCConnectionTransformer(), true);
 //      inst.addTransformer(new HttpUrlConnectionLogger(), true);
 //      inst.addTransformer(new ChemistryDefaultHttpInvokerLogger(), true);
-//      inst.addTransformer(new JspCompilationContextTransformer());
+      inst.addTransformer(new JspCompilationContextTransformer());
     }
     catch (Exception e) {
       System.err.println("failed");
