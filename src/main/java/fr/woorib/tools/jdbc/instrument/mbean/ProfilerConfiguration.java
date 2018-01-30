@@ -23,6 +23,7 @@ public class ProfilerConfiguration implements ProfilerConfigurationMBean {
       //add("ServiceTools");
       //"JspCompilationContext",
       //"Compiler"
+      add("Beacon");
     }};
 
   public static Set<String> instrumented = new HashSet<String>();
@@ -81,11 +82,6 @@ public class ProfilerConfiguration implements ProfilerConfigurationMBean {
       result += ">>> " + c+"\n";
     }
     return result;
-  }
-
-  @Override
-  public void flush() {
-    Profiler.printProfiling();
   }
 
   @Override

@@ -1003,6 +1003,15 @@ public class ResultSetWrapper implements ResultSet {
     return wrapped.isWrapperFor(iface);
   }
 
+  @Override
+  public <T> T getObject(int columnIndex, Class<T> type) throws SQLException {
+    return wrapped.getObject(columnIndex, type);
+  }
+
+  @Override
+  public <T> T getObject(String columnLabel, Class<T> type) throws SQLException {
+    return wrapped.getObject(columnLabel, type);
+  }
 
   @Override
   public String toString() {

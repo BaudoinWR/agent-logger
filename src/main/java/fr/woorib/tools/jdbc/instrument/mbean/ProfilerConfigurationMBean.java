@@ -18,8 +18,6 @@ public interface ProfilerConfigurationMBean {
 
   String printAllClasses();
 
-  void flush();
-
   String printPatterns();
 
   String loader();

@@ -3,38 +3,44 @@
  **/
 package fr.woorib.tools.jdbc.instrument.mbean;
 
+import javax.management.*;
+
 /**
  * Description: Merci de donner une description du service rendu par cette classe
  **/
-public class Profiler {
-  private static StringBuilder sBuilder = new StringBuilder();
+public class Profiler implements ProfilerMBean, NotificationBroadcaster {
+  private static NotificationBroadcasterSupport notificationBroadcasterSupport = new NotificationBroadcasterSupport();
+
+  private static int notification = 0;
 
   public static void methodIn(String methodName, String className) {
-    synchronized (sBuilder) {
-      logLine(methodName, className, false);
-      sBuilder.append("\n");
-    }
-  }
-
-  private static void logLine(String methodName, String className, boolean isEnd) {
-    String threadName = Thread.currentThread().getName();
-    String tName = threadName.length() > 5 ? threadName.substring(threadName.length()-5):threadName;
-    sBuilder.append("XX:XX:XX AGENT "+ className +" ["+tName+"] _TIMER_ "+(isEnd?"E":"S")+" XXXXXXXXXXXX "+ methodName);
-
+    notificationBroadcasterSupport.sendNotification(new Notification("logLine",
+            new LogLine(methodName, className, false, Thread.currentThread().getName(), 0l),
+            notification++
+    ));
   }
 
   public static void methodOut(String methodName, String className, long execution) {
-    synchronized (sBuilder) {
-      logLine(methodName, className, true);
-      sBuilder.append(" ["+execution+" ms]\n");
-    }
+    notificationBroadcasterSupport.sendNotification(new Notification("logLine",
+            new LogLine(methodName, className, true, Thread.currentThread().getName(), execution),
+            notification++
+    ));
   }
 
-  public static void printProfiling() {
-    synchronized (sBuilder) {
-      System.out.println(sBuilder.toString());
-      sBuilder = new StringBuilder();
-    }
+  @Override
+  public void addNotificationListener(NotificationListener listener, NotificationFilter filter, Object handback) throws IllegalArgumentException {
+    notificationBroadcasterSupport.addNotificationListener(listener, filter, handback);
+  }
+
+  @Override
+  public void removeNotificationListener(NotificationListener listener) throws ListenerNotFoundException {
+    notificationBroadcasterSupport.removeNotificationListener(listener);
+
+  }
+
+  @Override
+  public MBeanNotificationInfo[] getNotificationInfo() {
+    return notificationBroadcasterSupport.getNotificationInfo();
   }
 }
  

@@ -8,10 +8,17 @@ import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
+
+import fr.woorib.tools.jdbc.instrument.mbean.Profiler;
 import fr.woorib.tools.jdbc.instrument.mbean.ProfilerConfiguration;
 import fr.woorib.tools.jdbc.instrument.mbean.ProfilerConfigurationMBean;
+import fr.woorib.tools.jdbc.instrument.mbean.ProfilerMBean;
 
 public class Agent {
+
+  public static final String PROFILER_MBEAN_NAME = "fr.woorib:type=Profiler";
+  public static final String PROFILER_CONFIGURATION_MBEAN_NAME = "fr.woorib:type=ProfilerConfiguration";
+
   public static void premain(String agentArgs, Instrumentation inst) throws ClassNotFoundException, MalformedObjectNameException, NotCompliantMBeanException, InstanceAlreadyExistsException, MBeanRegistrationException {
     System.out.print("Executing premain.........");
     try {
@@ -27,8 +34,11 @@ public class Agent {
     }
 
     MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-    ObjectName name = new ObjectName("fr.woorib:type=Profiler");
+    ObjectName name = new ObjectName(PROFILER_CONFIGURATION_MBEAN_NAME);
     ProfilerConfigurationMBean mBean = new ProfilerConfiguration(inst);
+    mbs.registerMBean(mBean, name);
+    name = new ObjectName(PROFILER_MBEAN_NAME);
+    ProfilerMBean mBean2 = new Profiler();
     mbs.registerMBean(mBean, name);
 
     System.out.println("done");
@@ -39,9 +49,12 @@ public class Agent {
     System.out.print("Executing premain.........");
 
     MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-    ObjectName name = new ObjectName("fr.woorib:type=Profiler");
+    ObjectName name = new ObjectName(PROFILER_CONFIGURATION_MBEAN_NAME);
     ProfilerConfigurationMBean mBean = new ProfilerConfiguration(inst);
     mbs.registerMBean(mBean, name);
+    name = new ObjectName(PROFILER_MBEAN_NAME);
+    ProfilerMBean mBean2 = new Profiler();
+    mbs.registerMBean(mBean2, name);
 
     try {
 //      inst.addTransformer(new GenericJDBCConnectionTransformer(), true);

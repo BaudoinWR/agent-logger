@@ -81,7 +81,7 @@ public class ProfilerTransformer implements ClassFileTransformer {
   }
 
   private boolean classToInstrument(String className) {
-    if (className.contains("fr/woorib/tools")) {
+    if (className == null || className.contains("Profiler")) {
       return false;
     }
     if (ProfilerConfiguration.unInstrumented.contains(className)) {

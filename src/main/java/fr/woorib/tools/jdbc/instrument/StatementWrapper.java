@@ -202,6 +202,16 @@ public class StatementWrapper implements Statement {
   }
 
   @Override
+  public boolean isCloseOnCompletion() throws SQLException {
+    return wrapped.isCloseOnCompletion();
+  }
+
+  @Override
+  public void closeOnCompletion() throws SQLException {
+    wrapped.closeOnCompletion();
+  }
+
+  @Override
   public String toString() {
     String s = "prepared_statement_closed{" +
       "statement='" + statement + "'" +
