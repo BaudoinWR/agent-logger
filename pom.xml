@@ -17,12 +17,20 @@
       <groupId>net.sf.jt400</groupId>
       <artifactId>jt400</artifactId>
       <version>9.0</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>Junit</groupId>
       <artifactId>Junit</artifactId>
       <version>4.12</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>tools</groupId>
+      <artifactId>tools.jar</artifactId>
+      <version>1.6.0</version>
+      <scope>system</scope>
+      <systemPath>${java.home}/../lib/tools.jar</systemPath>
     </dependency>
   </dependencies>
 
@@ -41,16 +49,17 @@
               <goal>single</goal>
             </goals>
             <configuration>
-              <finalName>jdbctransform</finalName>
+              <finalName>agentlogger</finalName>
               <archive>
                 <manifest>
                   <addClasspath>true</addClasspath>
                 </manifest>
                 <manifestEntries>
                   <Premain-Class>fr.woorib.tools.jdbc.instrument.Agent</Premain-Class>
+                  <Agent-Class>fr.woorib.tools.jdbc.instrument.Agent</Agent-Class>
                   <Can-Redefine-Classes>true</Can-Redefine-Classes>
                   <Can-Retransform-Classes>true</Can-Retransform-Classes>
-                  <Boot-Class-Path>jdbctransform-jar-with-dependencies.jar</Boot-Class-Path>
+                  <Boot-Class-Path>agentlogger-jar-with-dependencies.jar</Boot-Class-Path>
                 </manifestEntries>
               </archive>
               <descriptorRefs>
@@ -59,6 +68,14 @@
             </configuration>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.6</source>
+          <target>1.6</target>
+        </configuration>
       </plugin>
     </plugins>
   </build>
