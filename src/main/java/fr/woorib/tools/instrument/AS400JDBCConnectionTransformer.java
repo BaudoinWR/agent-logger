@@ -67,7 +67,7 @@ public class AS400JDBCConnectionTransformer implements ClassFileTransformer {
     byte[] byteCode = classfileBuffer;
     if (className.equals("com/ibm/as400/access/AS400JDBCPreparedStatement")) {
       try {
-        //injectClassIntoLoader("fr.woorib.tools.jdbc.instrument.QueryHolder", loader);
+        //injectClassIntoLoader("fr.woorib.tools.instrument.QueryHolder", loader);
 //        injectClassIntoLoader("com.ibm.as400.access.AS400JDBCResultSet", loader);
       }
       catch (Exception e) {
@@ -77,7 +77,7 @@ public class AS400JDBCConnectionTransformer implements ClassFileTransformer {
     }
     if (className.equals("com/ibm/as400/access/AS400JDBCResultSet")) {
       try {
-        //injectClassIntoLoader("fr.woorib.tools.jdbc.instrument.QueryHolder", loader);
+        //injectClassIntoLoader("fr.woorib.tools.instrument.QueryHolder", loader);
       }
       catch (Exception e) {
         throw new JDBCTransformException(e);
@@ -96,7 +96,7 @@ public class AS400JDBCConnectionTransformer implements ClassFileTransformer {
     try {
       CtClass ctClass = classPool.makeClass(new ByteArrayInputStream(
         classfileBuffer));
-      CtField holder = new CtField(Descriptor.toCtClass("fr.woorib.tools.jdbc.instrument.QueryHolder", classPool), "holder", ctClass);
+      CtField holder = new CtField(Descriptor.toCtClass("fr.woorib.tools.instrument.QueryHolder", classPool), "holder", ctClass);
       holder.setModifiers(Modifier.PUBLIC);
       CtMethod setHolder = CtNewMethod.setter("setHolder", holder);
       ctClass.addField(holder);
@@ -160,9 +160,9 @@ public class AS400JDBCConnectionTransformer implements ClassFileTransformer {
     methodExecuteQuery.addLocalVariable("startTime", CtClass.longType);
     methodExecuteQuery.insertBefore("startTime = System.currentTimeMillis();");
     methodExecuteQuery.insertAfter("System.err.println(\"jdbc_request_log[query=\\\"\"+sqlStatement_+\"\\\", parameters=\\\"\" + map.toString()+\"\\\" execution_time=\"+ (System.currentTimeMillis() - startTime)+\"]\" );");
-    //methodExecuteQuery.insertAfter("com.ibm.as400.access.AS400JDBCResultSet res = $_; res.holder = new fr.woorib.tools.jdbc.instrument.QueryHolder(sqlStatement_.toString(), map);");
+    //methodExecuteQuery.insertAfter("com.ibm.as400.access.AS400JDBCResultSet res = $_; res.holder = new fr.woorib.tools.instrument.QueryHolder(sqlStatement_.toString(), map);");
     //methodExecuteQuery.insertAfter("com.ibm.as400.access.AS400JDBCResultSet res = $_;");
-    methodExecuteQuery.insertAfter("$_ = ($_ instanceof fr.woorib.tools.jdbc.instrument.ResultSetWrapper) ? $_ :  new fr.woorib.tools.jdbc.instrument.ResultSetWrapper($_, sqlStatement_.toString(), map);");
+    methodExecuteQuery.insertAfter("$_ = ($_ instanceof fr.woorib.tools.instrument.ResultSetWrapper) ? $_ :  new fr.woorib.tools.instrument.ResultSetWrapper($_, sqlStatement_.toString(), map);");
 
   }
 

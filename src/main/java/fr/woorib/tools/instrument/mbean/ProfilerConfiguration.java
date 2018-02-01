@@ -50,7 +50,7 @@ public class ProfilerConfiguration implements ProfilerConfigurationMBean {
   private String retransform(String s) throws UnmodifiableClassException {
     Class[] allLoadedClasses = inst.getAllLoadedClasses();
     for (Class c : allLoadedClasses) {
-      if (s.equals(c.getCanonicalName())) {
+      if (s.equals(c.getName())) {
         inst.retransformClasses(c);
         return "retransformed " + s;
       }

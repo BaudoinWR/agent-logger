@@ -63,7 +63,7 @@ public class GenericJDBCConnectionTransformer implements ClassFileTransformer {
 //      }));
       CtMethod[] methodsPrepareStatement = getDeclaredMethods(ctClass, "prepareStatement");
       for (CtMethod method : methodsPrepareStatement)
-        method.insertAfter("$_ = ($_ instanceof fr.woorib.tools.jdbc.instrument.PreparedStatementWrapper) ? $_ :  new fr.woorib.tools.jdbc.instrument.PreparedStatementWrapper($_, $1);");
+        method.insertAfter("$_ = ($_ instanceof fr.woorib.tools.instrument.PreparedStatementWrapper) ? $_ :  new fr.woorib.tools.instrument.PreparedStatementWrapper($_, $1);");
       byteCode = ctClass.toBytecode();
       ctClass.detach();
     }
@@ -79,7 +79,7 @@ public class GenericJDBCConnectionTransformer implements ClassFileTransformer {
     try {
       CtMethod[] methodsCreateStatement = getDeclaredMethods(ctClass, "createStatement");
       for (CtMethod method : methodsCreateStatement)
-        method.insertAfter("$_ = ($_ instanceof fr.woorib.tools.jdbc.instrument.StatementWrapper) ? $_ :  new fr.woorib.tools.jdbc.instrument.StatementWrapper($_);");
+        method.insertAfter("$_ = ($_ instanceof fr.woorib.tools.instrument.StatementWrapper) ? $_ :  new fr.woorib.tools.instrument.StatementWrapper($_);");
       byteCode = ctClass.toBytecode();
       ctClass.detach();
     }

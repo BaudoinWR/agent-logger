@@ -124,12 +124,12 @@ public class HttpUrlConnectionLogger implements ClassFileTransformer {
 
   private void editGetInputStream(CtClass ctClass) throws NotFoundException, CannotCompileException {
     CtMethod getInputStream = getCtMethodOrMake(ctClass, "getInputStream", null, "public java.io.InputStream getInputStream() { return super.getInputStream(); }");
-    getInputStream.insertAfter("$_ = ($_ instanceof fr.woorib.tools.jdbc.instrument.InputStreamWrapper) ? $_ : new fr.woorib.tools.jdbc.instrument.InputStreamWrapper($_, this.url, this.requestProperties);");
+    getInputStream.insertAfter("$_ = ($_ instanceof fr.woorib.tools.instrument.InputStreamWrapper) ? $_ : new fr.woorib.tools.instrument.InputStreamWrapper($_, this.url, this.requestProperties);");
   }
 
   private void editGetOutputStream(CtClass ctClass) throws NotFoundException, CannotCompileException {
     CtMethod getOutputStream = getCtMethodOrMake(ctClass, "getOutputStream", null, "public java.io.OutputStream getOutputStream() { return super.getOutputStream(); }");
-    getOutputStream.insertAfter("$_ = ($_ instanceof fr.woorib.tools.jdbc.instrument.OutputStreamWrapper) ? $_ :  new fr.woorib.tools.jdbc.instrument.OutputStreamWrapper($_, this.url, this.requestProperties);");
+    getOutputStream.insertAfter("$_ = ($_ instanceof fr.woorib.tools.instrument.OutputStreamWrapper) ? $_ :  new fr.woorib.tools.instrument.OutputStreamWrapper($_, this.url, this.requestProperties);");
   }
 
 }
