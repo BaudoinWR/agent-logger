@@ -1,7 +1,7 @@
 /**
  * Paquet de définition
  **/
-package fr.woorib.tools.jdbc.instrument;
+package fr.woorib.tools.instrument;
 
 import java.sql.Connection;
 import java.sql.ResultSet;

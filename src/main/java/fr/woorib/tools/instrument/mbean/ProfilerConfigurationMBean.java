@@ -1,7 +1,7 @@
 /**
  * Paquet de définition
  **/
-package fr.woorib.tools.jdbc.instrument.mbean;
+package fr.woorib.tools.instrument.mbean;
 
 import java.lang.instrument.UnmodifiableClassException;
 
@@ -20,6 +20,5 @@ public interface ProfilerConfigurationMBean {
 
   String printPatterns();
 
-  String loader();
 }
  

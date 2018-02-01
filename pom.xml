@@ -55,8 +55,8 @@
                   <addClasspath>true</addClasspath>
                 </manifest>
                 <manifestEntries>
-                  <Premain-Class>fr.woorib.tools.jdbc.instrument.Agent</Premain-Class>
-                  <Agent-Class>fr.woorib.tools.jdbc.instrument.Agent</Agent-Class>
+                  <Premain-Class>fr.woorib.tools.instrument.Agent</Premain-Class>
+                  <Agent-Class>fr.woorib.tools.instrument.Agent</Agent-Class>
                   <Can-Redefine-Classes>true</Can-Redefine-Classes>
                   <Can-Retransform-Classes>true</Can-Retransform-Classes>
                   <Boot-Class-Path>agentlogger-jar-with-dependencies.jar</Boot-Class-Path>
@@ -73,8 +73,8 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-          <source>1.7</source>
-          <target>1.7</target>
+          <source>1.6</source>
+          <target>1.6</target>
         </configuration>
       </plugin>
     </plugins>

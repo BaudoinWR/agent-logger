@@ -1,7 +1,7 @@
 /**
  * Paquet de définition
  **/
-package fr.woorib.tools.jdbc.instrument;
+package fr.woorib.tools.instrument;
 
 import java.io.InputStream;
 import java.io.Reader;

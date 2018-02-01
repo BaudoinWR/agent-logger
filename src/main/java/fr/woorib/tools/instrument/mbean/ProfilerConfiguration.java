@@ -1,7 +1,7 @@
 /**
  * Paquet de définition
  **/
-package fr.woorib.tools.jdbc.instrument.mbean;
+package fr.woorib.tools.instrument.mbean;
 
 import java.lang.instrument.Instrumentation;
 import java.lang.instrument.UnmodifiableClassException;
@@ -12,7 +12,6 @@ import java.util.Set;
  * Description: Merci de donner une description du service rendu par cette classe
  **/
 public class ProfilerConfiguration implements ProfilerConfigurationMBean {
-  public static ClassLoader classLoader;
   private Instrumentation inst;
   public static Set<String> classesToInstrument = new HashSet<String>(){
     {
@@ -38,18 +37,25 @@ public class ProfilerConfiguration implements ProfilerConfigurationMBean {
   public String addClassPattern(String s) {
     String result = "Adding to patterns to instrument : "+s+"\n";
     classesToInstrument.add(s.replace(".", "/"));
+    unInstrumented.remove(s.replace(".", "/"));
     try {
-      inst.retransformClasses(Class.forName(s, true, classLoader));
-      result += "retransformed "+s;
-    }
-    catch (ClassNotFoundException e) {
-      result += "Not retransforming not found class "+s;
+      result += retransform(s);
     }
     catch (UnmodifiableClassException e) {
       result += "Can't retransform "+s;
     }
-    unInstrumented.remove(s.replace(".", "/"));
     return result;
+  }
+
+  private String retransform(String s) throws UnmodifiableClassException {
+    Class[] allLoadedClasses = inst.getAllLoadedClasses();
+    for (Class c : allLoadedClasses) {
+      if (s.equals(c.getCanonicalName())) {
+        inst.retransformClasses(c);
+        return "retransformed " + s;
+      }
+    }
+    return s + " not found.";
   }
 
   @Override
@@ -63,14 +69,10 @@ public class ProfilerConfiguration implements ProfilerConfigurationMBean {
     String result = "Removing from patterns to instrument : "+s+"\n";
     try {
       unInstrumented.add(s.replace(".", "/"));
-      inst.retransformClasses(Class.forName(s, true, classLoader));
-      result += "Transformed "+s;
+      result += retransform(s);
     }
     catch (UnmodifiableClassException e) {
       result += "Can't retransform "+s;
-    }
-    catch (ClassNotFoundException e) {
-      result += "Not retransforming not found class "+s;
     }
     return result;
   }
@@ -93,9 +95,4 @@ public class ProfilerConfiguration implements ProfilerConfigurationMBean {
     return result;
   }
 
-  @Override
-  public String loader() {
-    return "Loaded class loader : " +classLoader.toString()+"\n"
-    + "system cl "+ClassLoader.getSystemClassLoader().toString();
-  }
 }

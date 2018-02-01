@@ -1,7 +1,7 @@
 /**
  * Paquet de définition
  **/
-package fr.woorib.tools.jdbc.instrument;
+package fr.woorib.tools.instrument;
 
 import java.io.ByteArrayInputStream;
 import java.lang.instrument.ClassFileTransformer;
@@ -10,7 +10,7 @@ import java.security.ProtectionDomain;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import fr.woorib.tools.jdbc.instrument.mbean.ProfilerConfiguration;
+import fr.woorib.tools.instrument.mbean.ProfilerConfiguration;
 import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;
@@ -54,12 +54,11 @@ public class ProfilerTransformer implements ClassFileTransformer {
         byteCode = bytes != null ? bytes : classfileBuffer;
         if (bytes != null) {
           ProfilerConfiguration.instrumented.add(className);
-          ProfilerConfiguration.classLoader = loader;
         }
       }
     }
     catch (Throwable e) {
-      System.err.println("ERROR FOR "+className);
+      System.err.println("ERROR FOR " + className);
       e.printStackTrace();
     }
     finally {
@@ -97,13 +96,12 @@ public class ProfilerTransformer implements ClassFileTransformer {
   }
 
   private byte[] addTimers(CtClass ctClass) {
-    String ctClassName = ctClass.getName().length() > 50 ? ctClass.getName().substring(ctClass.getName().length() - 50):ctClass.getName();
     CtMethod[] nonPrivateMethods = ctClass.getMethods();
     CtMethod[] declaredMethods = ctClass.getDeclaredMethods();
     Set<CtMethod> methods = new HashSet<CtMethod>();
     methods.addAll(Arrays.asList(nonPrivateMethods));
     methods.addAll(Arrays.asList(declaredMethods));
-    for(CtMethod method : methods) {
+    for (CtMethod method : methods) {
       if (!method.getDeclaringClass().getName().equals("java.lang.Object")) {
         try {
           method.addLocalVariable("startTime", CtClass.longType);
@@ -113,14 +111,14 @@ public class ProfilerTransformer implements ClassFileTransformer {
           continue;
         }
         try {
-          method.insertBefore("fr.woorib.tools.jdbc.instrument.mbean.Profiler.methodIn(\"" + method.getName() + "\",\"" + ctClassName + "\"); startTime = System.currentTimeMillis();");
+          method.insertBefore("fr.woorib.tools.jdbc.instrument.mbean.Profiler.methodIn(\"" + method.getName() + "\",\"" + ctClass.getName() + "\"); startTime = System.currentTimeMillis();");
         }
         catch (CannotCompileException e) {
           System.err.println("Erreur d'instrumentation {method=" + method.getLongName() + ";class=" + ctClass.getName() + ";location=insertBefore;message=" + e.getMessage() + "}");
           continue;
         }
         try {
-          method.insertAfter("fr.woorib.tools.jdbc.instrument.mbean.Profiler.methodOut(\"" + method.getName() + "\",\"" + ctClassName + "\", System.currentTimeMillis() - startTime);");
+          method.insertAfter("fr.woorib.tools.jdbc.instrument.mbean.Profiler.methodOut(\"" + method.getName() + "\",\"" + ctClass.getName() + "\", System.currentTimeMillis() - startTime);");
         }
         catch (CannotCompileException e) {
           System.err.println("Erreur d'instrumentation {method=" + method.getLongName() + ";class=" + ctClass.getName() + ";location=insertAfter;message=" + e.getMessage() + "}");
@@ -133,7 +131,7 @@ public class ProfilerTransformer implements ClassFileTransformer {
       bytes = ctClass.toBytecode();
     }
     catch (Exception e) {
-      System.err.println("Erreur d'instrumentation {class="+ctClass.getName()+";location=toByteCode;message="+e.getMessage());
+      System.err.println("Erreur d'instrumentation {class=" + ctClass.getName() + ";location=toByteCode;message=" + e.getMessage());
     }
     return bytes;
 
@@ -142,15 +140,21 @@ public class ProfilerTransformer implements ClassFileTransformer {
   private String getLogLine(CtMethod method, CtClass ctClass, boolean isEnd) {
 
     String result = "";
-      if (isEnd) result += "if ((System.currentTimeMillis() - startTime)>" + THREASHOLD_MS + ") {";
-      result += " String threadName = Thread.currentThread().getName();" +
+    if (isEnd) {
+      result += "if ((System.currentTimeMillis() - startTime)>" + THREASHOLD_MS + ") {";
+    }
+    result += " String threadName = Thread.currentThread().getName();" +
       " String tName = threadName.length() > 5 ? threadName.substring(threadName.length()-5):threadName;" +
-      " logInfo(\"_TIMER_ "+(isEnd?"E":"S")+" XXXXXXXXXXXX "+ method.getName();
-      //" {\"+java.util.Arrays.toString($args)+\"}" + No args as it makes things hard to read because of Strings with linebreaks
-      if (isEnd) result +=" [\"+(System.currentTimeMillis() - startTime)+\" ms]";
-      result +="\");";
-      if (isEnd) result += "}";
-      return result;
+      " logInfo(\"_TIMER_ " + (isEnd ? "E" : "S") + " XXXXXXXXXXXX " + method.getName();
+    //" {\"+java.util.Arrays.toString($args)+\"}" + No args as it makes things hard to read because of Strings with linebreaks
+    if (isEnd) {
+      result += " [\"+(System.currentTimeMillis() - startTime)+\" ms]";
+    }
+    result += "\");";
+    if (isEnd) {
+      result += "}";
+    }
+    return result;
   }
 }
  

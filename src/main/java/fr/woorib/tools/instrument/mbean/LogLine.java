@@ -1,4 +1,4 @@
-package fr.woorib.tools.jdbc.instrument.mbean;
+package fr.woorib.tools.instrument.mbean;
 
 import java.io.Serializable;
 

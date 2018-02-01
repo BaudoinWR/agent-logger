@@ -1,4 +1,4 @@
-package fr.woorib.tools.jdbc.instrument;
+package fr.woorib.tools.instrument;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

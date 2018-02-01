@@ -1,4 +1,4 @@
-package fr.woorib.tools.jdbc.instrument;
+package fr.woorib.tools.instrument;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -11,7 +11,7 @@ import java.net.URLClassLoader;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.List;
-import fr.woorib.tools.jdbc.instrument.exception.JDBCTransformException;
+import fr.woorib.tools.instrument.exception.JDBCTransformException;
 import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;

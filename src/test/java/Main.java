@@ -3,37 +3,36 @@
  **/
 
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Properties;
-import java.util.Set;
-
+import java.util.HashSet;
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanServerConnection;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+import javax.management.remote.JMXConnector;
+import javax.management.remote.JMXConnectorFactory;
+import javax.management.remote.JMXServiceURL;
+import org.junit.Test;
 import com.sun.tools.attach.AgentInitializationException;
 import com.sun.tools.attach.AgentLoadException;
 import com.sun.tools.attach.AttachNotSupportedException;
 import com.sun.tools.attach.VirtualMachine;
-import fr.woorib.tools.jdbc.instrument.Agent;
-import fr.woorib.tools.jdbc.instrument.mbean.LogLine;
-import fr.woorib.tools.jdbc.instrument.mbean.Profiler;
-import fr.woorib.tools.jdbc.instrument.mbean.ProfilerMBean;
-import org.junit.Test;
-
-import javax.management.*;
-import javax.management.remote.JMXConnector;
-import javax.management.remote.JMXConnectorFactory;
-import javax.management.remote.JMXServiceURL;
+import fr.woorib.tools.instrument.Agent;
+import fr.woorib.tools.instrument.mbean.ClassLogFilter;
+import fr.woorib.tools.instrument.mbean.LogNotificationListener;
+import sun.management.ConnectorAddressLink;
 
 /**
  * Description: Merci de donner une description du service rendu par cette classe
  **/
 public class Main {
-  private static String PID = "2164";
+  public static HashSet<String> LOG_FILTER = new HashSet<String>();
+
+  private static String PID = "11872";
 
   public static void main(String[] args) throws IOException, AttachNotSupportedException, AgentLoadException, AgentInitializationException {
     VirtualMachine vm = VirtualMachine.attach(PID);
     try {
-      vm.loadAgent("D:\\git\\agent-logger\\target\\agentlogger-jar-with-dependencies.jar");
+      vm.loadAgent("D:\\project\\agent-logger\\target\\agentlogger-jar-with-dependencies.jar");
     }
     finally {
       vm.detach();
@@ -43,33 +42,28 @@ public class Main {
 
   @Test
   public void test() throws IOException, AttachNotSupportedException, MalformedObjectNameException, InstanceNotFoundException, InterruptedException {
-    VirtualMachine vm;
-    vm = VirtualMachine.attach(PID);
-    String connectorAddress = vm.startLocalManagementAgent();
+    String connectorAddress = ConnectorAddressLink.importFrom(Integer.parseInt(PID));
     if (connectorAddress == null) {
     }
     JMXServiceURL url = new JMXServiceURL(connectorAddress);
 
-    try (JMXConnector connector = JMXConnectorFactory.connect(url)){
+    JMXConnector connector = null;
+    try {
+      LOG_FILTER.add("AS400");
+      connector = JMXConnectorFactory.connect(url);
       MBeanServerConnection mbeanConn = connector.getMBeanServerConnection();
       ObjectName objectName = new ObjectName(Agent.PROFILER_MBEAN_NAME);
-      mbeanConn.addNotificationListener(objectName, new NotificationListener() {
-        @Override
-        public void handleNotification(Notification notification, Object handback) {
-          LogLine source = (LogLine) notification.getSource();
-          long timeStamp = notification.getTimeStamp();
-          Date date = new Date(timeStamp);
-          String format = new SimpleDateFormat("HH:mm:ss").format(date);
-          System.out.print(format+" AGENT "+ source.getClassName() +" ["+source.getThreadName()+"] _TIMER_ "+(source.getEnd()?"E":"S")+" XXXXXXXXXXXX "+ source.getMethodName());
-          if (source.getEnd()) {
-            System.out.print(" ["+source.getExecution()+" ms]");
-          }
-          System.out.println();
-        }
-      }, null, null);
+      mbeanConn.addNotificationListener(objectName, new LogNotificationListener(),
+        new ClassLogFilter(LOG_FILTER), null);
 
-      while(true) {
+      while (true) {
+        connector.getMBeanServerConnection().getMBeanCount();
         Thread.sleep(10000);
+      }
+    }
+    finally {
+      if (connector != null) {
+        connector.close();
       }
     }
   }
