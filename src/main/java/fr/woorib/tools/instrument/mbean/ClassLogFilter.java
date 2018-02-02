@@ -20,6 +20,9 @@ public class ClassLogFilter implements NotificationFilter, Serializable {
 
   @Override
   public boolean isNotificationEnabled(Notification notification) {
+    if (filterPatterns == null || filterPatterns.isEmpty()) {
+      return true;
+    }
     LogLine source = (LogLine) notification.getSource();
     for (String filter : filterPatterns) {
       if (source.getClassName().contains(filter)) {

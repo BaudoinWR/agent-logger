@@ -2,14 +2,15 @@
  * Paquet de définition
  **/
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Scanner;
 import javax.management.InstanceNotFoundException;
-import javax.management.MBeanException;
 import javax.management.MBeanServerConnection;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
-import javax.management.ReflectionException;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
@@ -18,6 +19,7 @@ import com.sun.tools.attach.AgentInitializationException;
 import com.sun.tools.attach.AgentLoadException;
 import com.sun.tools.attach.AttachNotSupportedException;
 import com.sun.tools.attach.VirtualMachine;
+import com.sun.tools.attach.VirtualMachineDescriptor;
 import fr.woorib.tools.instrument.Agent;
 import fr.woorib.tools.instrument.mbean.ClassLogFilter;
 import fr.woorib.tools.instrument.mbean.LogNotificationListener;
@@ -31,10 +33,13 @@ public class Main {
 
   private static String PID = "4964";
 
-  public static void main(String[] args) throws IOException, AttachNotSupportedException, AgentLoadException, AgentInitializationException {
-    VirtualMachine vm = VirtualMachine.attach(PID);
+  @Test
+  public void test() throws IOException, AttachNotSupportedException, AgentLoadException, AgentInitializationException {
+    VirtualMachine vm = VirtualMachine.attach("13144");
     try {
-      vm.loadAgent("D:\\git\\agent-logger\\target\\agentlogger-jar-with-dependencies.jar");
+      vm.loadAgent(System.getProperty("java.home") + File.separator + "lib"
+        + File.separator + "management-agent.jar");
+      vm.loadAgent("D:\\project\\agent-logger\\target\\agentlogger-jar-with-dependencies.jar");
     }
     finally {
       vm.detach();
@@ -42,20 +47,21 @@ public class Main {
     System.out.println(" ran for " + PID);
   }
 
-  @Test
-  public void test() throws IOException, AttachNotSupportedException, MalformedObjectNameException, InstanceNotFoundException, InterruptedException {
+  public static void main(String[] args) throws IOException, AttachNotSupportedException, MalformedObjectNameException, InstanceNotFoundException, InterruptedException {
 //    String connectorAddress = ConnectorAddressLink.importFrom(Integer.parseInt(PID));
-    VirtualMachine vm;
-    vm = VirtualMachine.attach(PID);
-    String connectorAddress = vm.startLocalManagementAgent();
-
+//    VirtualMachine vm;
+//    vm = VirtualMachine.attach(PID);
+    int pid = getPid();
+    VirtualMachine vm = VirtualMachine.attach(Integer.toString(pid));
+    //String connectorAddress = vm.startLocalManagementAgent();
+    String connectorAddress = ConnectorAddressLink.importFrom(pid);
     if (connectorAddress == null) {
     }
     JMXServiceURL url = new JMXServiceURL(connectorAddress);
 
     JMXConnector connector = null;
     try {
-      LOG_FILTER.add("Beacon");
+      LOG_FILTER.add("Provider");
       connector = JMXConnectorFactory.connect(url);
       MBeanServerConnection mbeanConn = connector.getMBeanServerConnection();
       ObjectName objectName = new ObjectName(Agent.PROFILER_MBEAN_NAME);
@@ -73,6 +79,18 @@ public class Main {
         connector.close();
       }
     }
+  }
+
+  private static int getPid() {
+    List<VirtualMachineDescriptor> list = VirtualMachine.list();
+    int i = 0;
+    for (VirtualMachineDescriptor desc : list) {
+      System.out.println(i++ + " - " + desc.displayName());
+    }
+    Scanner s = new Scanner(System.in);
+    String s1 = s.nextLine();
+    VirtualMachineDescriptor virtualMachineDescriptor = list.get(Integer.parseInt(s1));
+    return Integer.parseInt(virtualMachineDescriptor.id());
   }
 
 }
