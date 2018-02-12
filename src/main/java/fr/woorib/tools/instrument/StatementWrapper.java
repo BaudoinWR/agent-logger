@@ -84,6 +84,7 @@ public class StatementWrapper implements Statement {
   }
 
   public boolean execute(String sql) throws SQLException {
+    this.statement = sql;
     return wrapped.execute(sql);
   }
 
@@ -201,16 +202,17 @@ public class StatementWrapper implements Statement {
     return wrapped.isWrapperFor(iface);
   }
 
-  @Override
-  public boolean isCloseOnCompletion() throws SQLException {
-    return wrapped.isCloseOnCompletion();
-  }
+  /*
+    @Override
+    public boolean isCloseOnCompletion() throws SQLException {
+      return wrapped.isCloseOnCompletion();
+    }
 
-  @Override
-  public void closeOnCompletion() throws SQLException {
-    wrapped.closeOnCompletion();
-  }
-
+    @Override
+    public void closeOnCompletion() throws SQLException {
+      wrapped.closeOnCompletion();
+    }
+  */
   @Override
   public String toString() {
     String s = "prepared_statement_closed{" +

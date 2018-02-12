@@ -2,8 +2,8 @@ package fr.woorib.tools.instrument.mbean; /**
  * Paquet de définition
  **/
 
-import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import javax.management.Notification;
 import javax.management.NotificationListener;
@@ -22,10 +22,10 @@ public class LogNotificationListener implements NotificationListener {
     String className = fullClassName.length() > 50 ? fullClassName.substring(fullClassName.length() - 50) : fullClassName;
     System.out.print(format + " AGENT " + className + " [" + source.getThreadName() + "] _TIMER_ " + (source.getEnd() ? "E" : "S") + " XXXXXXXXXXXX " + source.getMethodName());
     if (source.getEnd()) {
-      String execution = new DecimalFormat().format(source.getExecution());
-      System.out.print(" [" + execution + " ns]");
+      //String execution = new DecimalFormat().format(source.getExecution());
+      System.out.print(" [" + (source.getExecution() / 1000000) + " ms]");
     }
-    System.out.println();
+    System.out.println(" {" + Arrays.toString(source.getArgs()) + "}");
   }
 }
  

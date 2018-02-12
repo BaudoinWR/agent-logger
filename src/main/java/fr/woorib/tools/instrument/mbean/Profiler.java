@@ -13,16 +13,16 @@ public class Profiler implements ProfilerMBean, NotificationBroadcaster {
 
   private static int notification = 0;
 
-  public static void methodIn(String methodName, String className) {
+  public static void methodIn(String methodName, String className, Object[] args) {
     notificationBroadcasterSupport.sendNotification(new Notification("logLine",
-            new LogLine(methodName, className, false, Thread.currentThread().getName(), 0l),
+      new LogLine(methodName, className, false, Thread.currentThread().getName(), args, 0l),
             notification++
     ));
   }
 
   public static void methodOut(String methodName, String className, long execution) {
     notificationBroadcasterSupport.sendNotification(new Notification("logLine",
-            new LogLine(methodName, className, true, Thread.currentThread().getName(), execution),
+      new LogLine(methodName, className, true, Thread.currentThread().getName(), null, execution),
             notification++
     ));
   }

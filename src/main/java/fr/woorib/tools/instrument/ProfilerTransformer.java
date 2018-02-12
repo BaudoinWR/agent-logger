@@ -111,7 +111,7 @@ public class ProfilerTransformer implements ClassFileTransformer {
           continue;
         }
         try {
-          method.insertBefore("fr.woorib.tools.instrument.mbean.Profiler.methodIn(\"" + method.getName() + "\",\"" + ctClass.getName() + "\"); startTime = System.nanoTime();");
+          method.insertBefore("fr.woorib.tools.instrument.mbean.Profiler.methodIn(\"" + method.getName() + "\",\"" + ctClass.getName() + "\", $args); startTime = System.nanoTime();");
         }
         catch (CannotCompileException e) {
           System.err.println("Erreur d'instrumentation {method=" + method.getLongName() + ";class=" + ctClass.getName() + ";location=insertBefore;message=" + e.getMessage() + "}");

@@ -22,7 +22,9 @@ public class ProfilerConfiguration implements ProfilerConfigurationMBean {
       //add("ServiceTools");
       //"JspCompilationContext",
       //"Compiler"
-      add("Beacon");
+      add("org.apache.jasper.compiler.Jsr199JavaCompiler");
+      add("org.apache.jasper.compiler.Compiler");
+      add("org.apache.jasper.JspCompilationContext");
     }};
 
   public static Set<String> instrumented = new HashSet<String>();

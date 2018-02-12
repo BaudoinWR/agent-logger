@@ -4,6 +4,9 @@
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
@@ -31,11 +34,11 @@ import sun.management.ConnectorAddressLink;
 public class Main {
   public static HashSet<String> LOG_FILTER = new HashSet<String>();
 
-  private static String PID = "4964";
+  private static String PID = "6896";
 
   @Test
   public void test() throws IOException, AttachNotSupportedException, AgentLoadException, AgentInitializationException {
-    VirtualMachine vm = VirtualMachine.attach("13144");
+    VirtualMachine vm = VirtualMachine.attach(PID);
     try {
       vm.loadAgent(System.getProperty("java.home") + File.separator + "lib"
         + File.separator + "management-agent.jar");
@@ -48,7 +51,11 @@ public class Main {
   }
 
   public static void main(String[] args) throws IOException, AttachNotSupportedException, MalformedObjectNameException, InstanceNotFoundException, InterruptedException {
-//    String connectorAddress = ConnectorAddressLink.importFrom(Integer.parseInt(PID));
+    URL[] urls = ((URLClassLoader) Thread.currentThread().getContextClassLoader()).getURLs();
+    System.out.println(Arrays.toString(urls));
+
+
+    //    String connectorAddress = ConnectorAddressLink.importFrom(Integer.parseInt(PID));
 //    VirtualMachine vm;
 //    vm = VirtualMachine.attach(PID);
     int pid = getPid();
@@ -61,7 +68,6 @@ public class Main {
 
     JMXConnector connector = null;
     try {
-      LOG_FILTER.add("Provider");
       connector = JMXConnectorFactory.connect(url);
       MBeanServerConnection mbeanConn = connector.getMBeanServerConnection();
       ObjectName objectName = new ObjectName(Agent.PROFILER_MBEAN_NAME);
@@ -85,7 +91,7 @@ public class Main {
     List<VirtualMachineDescriptor> list = VirtualMachine.list();
     int i = 0;
     for (VirtualMachineDescriptor desc : list) {
-      System.out.println(i++ + " - " + desc.displayName());
+      System.out.println(i++ + " - " + desc.id() + " - " + desc.displayName());
     }
     Scanner s = new Scanner(System.in);
     String s1 = s.nextLine();
