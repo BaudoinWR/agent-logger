@@ -5,8 +5,8 @@ import java.io.IOException;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtMethod;
@@ -47,10 +47,10 @@ public class GenericJDBCConnectionTransformer implements ClassFileTransformer {
       }
     }
     catch (IOException e) {
-      e.printStackTrace();
+      //e.printStackTrace();
     }
     catch (NotFoundException e) {
-      e.printStackTrace();
+      //e.printStackTrace();
     }
 
     return byteCode;
@@ -92,8 +92,14 @@ public class GenericJDBCConnectionTransformer implements ClassFileTransformer {
 
   private CtMethod[] getDeclaredMethods(CtClass ctClass, String methodName) throws NotFoundException {
     CtMethod[] declaredMethods = ctClass.getDeclaredMethods();
-    List<CtMethod> ctMethods = new ArrayList<CtMethod>();
+    CtMethod[] methods = ctClass.getMethods();
+    Set<CtMethod> ctMethods = new HashSet<CtMethod>();
     for (CtMethod method : declaredMethods) {
+      if (methodName.equals(method.getName())) {
+        ctMethods.add(method);
+      }
+    }
+    for (CtMethod method : methods) {
       if (methodName.equals(method.getName())) {
         ctMethods.add(method);
       }

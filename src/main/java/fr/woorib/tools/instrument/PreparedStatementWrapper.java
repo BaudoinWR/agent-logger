@@ -29,9 +29,9 @@ import java.util.Calendar;
  **/
 public class PreparedStatementWrapper extends StatementWrapper implements PreparedStatement {
 
-  public PreparedStatementWrapper(PreparedStatement wrapped, String statement) {
+  public PreparedStatementWrapper(PreparedStatement wrapped, Object statement) {
     super(wrapped);
-    this.statement = statement;
+    this.statement = statement.toString();
   }
 
   @Override

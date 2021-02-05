@@ -4,12 +4,12 @@ import java.io.Serializable;
 import java.util.Arrays;
 
 public class LogLine implements Serializable {
-    private final String methodName;
-    private final String className;
-    private final Boolean isEnd;
-    private final String threadName;
+  private final String methodName;
+  private final String className;
+  private final Boolean isEnd;
+  private final String threadName;
   private final String[] args;
-    private final Long execution;
+  private final Long execution;
 
   LogLine(String methodName, String className, Boolean isEnd, String threadName, Object[] args, Long execution) {
     this.methodName = methodName;
@@ -18,7 +18,7 @@ public class LogLine implements Serializable {
     this.threadName = threadName;
     this.args = argsToStringArray(args);
     this.execution = execution;
-    }
+  }
 
   private String[] argsToStringArray(Object[] args) {
     String[] result;
@@ -42,24 +42,24 @@ public class LogLine implements Serializable {
   }
 
   public String getMethodName() {
-        return methodName;
-    }
+    return methodName;
+  }
 
   public String getClassName() {
-        return className;
-    }
+    return className;
+  }
 
   public Boolean getEnd() {
-        return isEnd;
-    }
+    return isEnd;
+  }
 
   public String getThreadName() {
-        return threadName;
-    }
+    return threadName;
+  }
 
   public Long getExecution() {
-        return execution;
-    }
+    return execution;
+  }
 
   public Object[] getArgs() {
     return args;
